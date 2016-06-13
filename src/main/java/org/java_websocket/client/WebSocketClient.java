@@ -1,19 +1,5 @@
 package org.java_websocket.client;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.nio.ByteBuffer;
-import java.nio.channels.ByteChannel;
-import java.nio.channels.CancelledKeyException;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
-import java.nio.channels.spi.SelectorProvider;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-
 import org.java_websocket.SocketChannelIOHelper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocket.READYSTATE;
@@ -29,6 +15,20 @@ import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.channels.ByteChannel;
+import java.nio.channels.CancelledKeyException;
+import java.nio.channels.ClosedByInterruptException;
+import java.nio.channels.NotYetConnectedException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.SelectorProvider;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+
 /**
  * The <tt>WebSocketClient</tt> is an abstract class that expects a valid
  * "ws://" URI to connect to. When connected, an instance recieves important
@@ -36,7 +36,7 @@ import org.java_websocket.handshake.ServerHandshake;
  * <var>onOpen</var>, <var>onClose</var>, and <var>onMessage</var> to be
  * useful. An instance can send messages to it's connected server via the
  * <var>send</var> method.
- * 
+ *
  * @author Nathan Rajlich
  */
 public abstract class WebSocketClient extends WebSocketAdapter implements Runnable {
@@ -111,12 +111,12 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 		else{
 			conn = (WebSocketImpl) wsfactory.createWebSocket( this, draft, channel.socket() );
 		}
-		
+
 	}
 
 	/**
 	 * Gets the URI that this WebSocketClient is connected to.
-	 * 
+	 *
 	 * @return The <tt>URI</tt> for this WebSocketClient.
 	 */
 	public URI getURI() {
@@ -163,7 +163,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	/**
 	 * Sends <var>text</var> to the connected WebSocket server.
-	 * 
+	 *
 	 * @param text
 	 *            The String to send to the WebSocket server.
 	 */
@@ -173,7 +173,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	/**
 	 * Sends <var>data</var> to the connected WebSocket server.
-	 * 
+	 *
 	 * @param data
 	 *            The Byte-Array of data to send to the WebSocket server.
 	 */
@@ -215,13 +215,17 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			readthread = new Thread( new WebsocketWriteThread() );
 			readthread.start();
 		} catch ( ClosedByInterruptException e ) {
-			onWebsocketError( null, e );
+			onWebsocketError(null, e);
 			return;
 		} catch ( /*IOException | SecurityException | UnresolvedAddressException*/Exception e ) {//
 			onWebsocketError( conn, e );
 			conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
 			return;
-		}
+        } catch ( AssertionError e ) {
+            onWebsocketError( conn, new Exception(e.getMessage()) );
+            conn.closeConnection( CloseFrame.NEVER_CONNECTED, e.getMessage() );
+            return;
+        }
 
 		ByteBuffer buff = ByteBuffer.allocate( WebSocketImpl.RCVBUF );
 		try/*IO*/{
@@ -303,7 +307,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	/**
 	 * Calls subclass' implementation of <var>onMessage</var>.
-	 * 
+	 *
 	 * @param conn
 	 * @param message
 	 */
@@ -319,7 +323,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	/**
 	 * Calls subclass' implementation of <var>onOpen</var>.
-	 * 
+	 *
 	 * @param conn
 	 */
 	@Override
@@ -330,7 +334,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	/**
 	 * Calls subclass' implementation of <var>onClose</var>.
-	 * 
+	 *
 	 * @param conn
 	 */
 	@Override
@@ -344,7 +348,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 
 	/**
 	 * Calls subclass' implementation of <var>onIOError</var>.
-	 * 
+	 *
 	 * @param conn
 	 */
 	@Override
@@ -446,7 +450,7 @@ public abstract class WebSocketClient extends WebSocketAdapter implements Runnab
 			}
 		}
 	}
-	
+
 	public ByteChannel createProxyChannel( ByteChannel towrap ) {
 		if( proxyAddress != null ){
 			return new DefaultClientProxyChannel( towrap );
